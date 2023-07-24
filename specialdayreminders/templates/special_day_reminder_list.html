@@ -1,0 +1,97 @@
+<!-- SpecialDayReminderProject/specialdayreminders/templates/specialdayreminders/special_day_reminder_list.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Special Day Reminders</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            background-color: #f8f8f8;
+            padding-top: 40px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            border-radius: 10px;
+        }
+
+        h1 {
+            color: #007bff;
+            font-size: 36px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            font-size: 18px;
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        li:last-child {
+            border-bottom: none;
+        }
+
+        a {
+            text-decoration: none;
+            color: #007bff;
+            font-size: 16px;
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .add-new {
+            background-color: #007bff;
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .add-new:hover {
+            background-color: #0056b3;
+        }
+
+        .logout {
+            background-color: #dc3545;
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-block;
+            margin-left: 10px;
+        }
+
+        .logout:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Special Day Reminders</h1>
+        <ul>
+            {% for reminder in reminders %}
+            <li>
+                {{ reminder.name }} ({{ reminder.specialday_type }}) - {{ reminder.date }}
+            </li>
+            {% endfor %}
+        </ul>
+        <a href="{% url 'add_special_day_reminder' %}" class="add-new">Add New Reminder</a>
+        <a href="{% url 'user_logout' %}" class="logout">Logout</a>
+    </div>
+</body>
+</html>
