@@ -79,6 +79,7 @@
             background-color: #c82333;
         }
     </style>
+    <script src="https://cdn.logsnag.com/js/0.1.8/ls.js"></script>
 </head>
 <body>
     <div class="container">
@@ -93,5 +94,86 @@
         <a href="{% url 'add_special_day_reminder' %}" class="add-new">Add New Reminder</a>
         <a href="{% url 'user_logout' %}" class="logout">Logout</a>
     </div>
+    <script src="https://www.gstatic.com/firebasejs/7.14.6/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.14.6/firebase-messaging.js"></script>
+    <script>
+        var firebaseConfig = {
+                apiKey: "AIzaSyB5T5QLJrvz9pbNcT1PMWSjT5Svyp2c-I4",
+                authDomain: "specialday-44fe2.firebaseapp.com",
+                projectId: "specialday-44fe2",
+                storageBucket: "specialday-44fe2.appspot.com",
+                messagingSenderId: "930052022962",
+                appId: "1:930052022962:web:a622346d4f2e82fb179fab",
+                measurementId: "G-Q9XK52R69S"
+                };
+        firebase.initializeApp(firebaseConfig);
+        const messaging=firebase.messaging();
+    
+        function IntitalizeFireBaseMessaging() {
+        messaging
+            .requestPermission()
+            .then(function () {
+                console.log("Notification Permission");
+                return messaging.getToken();
+            })
+            .then(function (token) {
+                console.log("Token : " + token);
+                
+    
+                // Send the token to your Django view using AJAX
+                var formData = new FormData();
+                formData.append('token', token);
+    
+                fetch('/specaildaylist/', {
+                    method: 'POST',
+                    body: formData,
+                })
+                    .then((response) => {
+                        if (response.ok) {
+                            console.log('Token sent to the server successfully.');
+                        } else {
+                            console.error('Failed to send token to the server.');
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Error sending token:', error);
+                    });
+            })
+            .catch(function (reason) {
+                console.error(reason);
+            });
+            messaging.onTokenRefresh(function () {
+            messaging.getToken()
+                .then(function (newtoken) {
+                    console.log("New Token : "+ newtoken);
+                })
+                .catch(function (reason) {
+                    console.log(reason);
+                })
+        })
+        
+        
+        }
+        
+        messaging.onMessage((payload) => {
+            console.log('Received notification:', payload);
+            const { title, body } = payload.notification;
+    
+            // Customize how you want to show the notification when the app is in the foreground
+            const notification = new Notification(title, { body });
+    
+            // Add any custom actions to the notification
+            notification.onclick = (event) => {
+                event.preventDefault();
+                // Add your custom action handling code here
+                console.log('Notification clicked:', payload);
+            };
+        });
+        
+        IntitalizeFireBaseMessaging();
+    
+    </script>
+   
+ 
 </body>
 </html>

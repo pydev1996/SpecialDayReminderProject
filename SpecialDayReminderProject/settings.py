@@ -115,10 +115,25 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
-
+import os
 STATIC_URL = '/static/'
+
+# Specify the directories from which to collect static files
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+# Run "python manage.py collectstatic" to collect static files to this directory
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+    # Other settings...
+}
+CORS_ORIGIN_ALLOW_ALL = True

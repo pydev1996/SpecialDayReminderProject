@@ -4,7 +4,30 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from .models import SpecialDayReminder
-from celery import shared_task
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .models import FCMToken
+# views.py
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .models import FCMToken
+from django.contrib.auth.decorators import login_required
+
+@api_view(['POST'])
+@login_required
+def save_fcm_token(request):
+    user = request.user
+    token = request.data.get('token')
+
+    if token:
+        # Save the FCM token in the database
+        FCMToken.objects.update_or_create(user=user, defaults={'token': token})
+        return Response({'message': 'Token saved successfully'}, status=201)
+    else:
+        return Response({'message': 'Token not provided'}, status=400)
+
+
+
 def signup(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
@@ -37,28 +60,37 @@ from datetime import timedelta
 import requests
 from django.utils import timezone
 from django.shortcuts import render
+from datetime import timedelta
+from django.shortcuts import render
+from django.utils import timezone
 from .models import SpecialDayReminder
-from django.contrib.auth.decorators import login_required
-import pywhatkit
-
+from .firebase_utils import send_fcm_notification  # This is a custom function for sending FCM notifications
+from django.views.decorators.csrf import csrf_exempt
 @login_required
+@csrf_exempt
 def special_day_reminder_list(request):
-    
     reminders = SpecialDayReminder.objects.filter(user=request.user)
-    API_TOKEN='EAABZC7QqicZAwBACBZBoc0Gsk1GgcChbxEVRspbKZBDJT2iSO8uIBDlbKMlLO5FIFfOjVTPnyreDtwNp8EkawDMQJbZAmRY0aFyRZB01CYbmHQhDKC0KYiBk0AAZBI2pwhsvy2BYvwuL7z7vGifjqXesdVHHEZBRUZBz6ZBtnghgnur87mzG1D4IZBnTUE4H48l4bzfyeWvA1ayMwZDZD'
-    for reminder in reminders:
-        time_difference = reminder.date - timezone.localtime().date()
-        print(timedelta(days=1))
-        if time_difference == timedelta(days=1):
-            # Replace the following line with your WhatsApp Business API endpoint and token
+    if request.method == 'POST':
+        fcm_token = request.POST.get('token')
+
+        
+
+        for reminder in reminders:
+            time_difference = reminder.date - timezone.localtime().date()
+            #print(fcm_token)
+            if time_difference == timedelta(days=1):
+                title = "Special Day Reminder"
+                message = f"Tomorrow is {reminder.name}'s ({reminder.specialday_type}) day. Please wish them!"
+                #print(message)
+                send_fcm_notification(fcm_token, title, message)
+                break
+
+        return render(request, 'special_day_reminder_list.html', {'reminders': reminders})
+
+    else:
        
-            reminder_message = f"Reminder: {reminder.name} ({reminder.specialday_type}) is tomorrow!"
-            create_notification("Wishes", reminder_message)
 
-
-       
-
-    return render(request, 'special_day_reminder_list.html', {'reminders': reminders})
+        return render(request, 'special_day_reminder_list.html', {'reminders': reminders})
 
 
 @login_required
@@ -73,17 +105,22 @@ def add_special_day_reminder(request):
 
     return render(request, 'add_special_day_reminder.html')
 
-# specialdayreminders/tasks.py
+from django.http import HttpResponse
 
-from plyer import notification
+def firebase_messaging_sw(request):
+    # Assuming you have the 'firebase-messaging-sw.js' file in your static files directory
+    file_path = 'C:/Users/dell/Downloads/SpecialDayReminderProject/specialdayreminders/templates/firebase-messaging-sw.js'
 
-def create_notification(title, message):
-    notification.notify(
-        title=title,
-        message=message,
-        app_icon=None,  # If you want to use a custom icon, provide the path here
-        timeout=10,     # Notification will be shown for 10 seconds (you can change this value)
-    )
+    # Read the contents of the 'firebase-messaging-sw.js' file
+    with open(file_path, 'r') as file:
+        js_content = file.read()
+
+    # Set the proper MIME type for the response
+    response = HttpResponse(js_content, content_type='application/javascript')
+    return response
+
+
+
 
 
 

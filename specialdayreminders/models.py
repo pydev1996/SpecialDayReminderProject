@@ -11,3 +11,8 @@ class SpecialDayReminder(models.Model):
 
     def __str__(self):
         return self.name
+from django.db import models
+
+class FCMToken(models.Model):
+    user = models.ForeignKey('auth.User', on_delete=models.CASCADE)
+    token = models.CharField(max_length=255)
